@@ -4,15 +4,16 @@ class Field extends React.Component {
     constructor() {
         super()
         this.onCellClick = this.onCellClick.bind(this);
+        this.progressWorld = this.progressWorld.bind(this);
         this.state = {...this.state, world: [[]]};
     }
     
     render() {
-        return <div className="field">{this.parseWorld(this.state.world)}</div>
+        return <div className="field">{this.parseWorld(this.state.world)}<br/><button onClick={this.progressWorld}>Progress</button></div>
     }
     
     componentDidMount() {
-        if(this.state.world[0].length === 0) this.setState({world: this.createWorld(10, 10)});
+        if(this.state.world[0].length === 0) this.setState({world: this.createWorld(20, 20)});
     }
 
     createWorld(rows, cols) {
@@ -47,13 +48,42 @@ class Field extends React.Component {
         return output;
     }
 
-    progressWorld(world) {
-        let output = [];
-        world.forEach((row, rowIndex) => {
+    getNeighbors(world, row, col) {
+        var neighbors = 0;
+        if(world[row-1]) {
+            if(world[row-1][col-1]) neighbors++;
+            if(world[row-1][col])   neighbors++;
+            if(world[row-1][col+1]) neighbors++;
+        }
+
+        if(world[row]) {
+            if(world[row][col-1])   neighbors++;
+            if(world[row][col+1])   neighbors++;
+        }
+
+        if(world[row+1]) {
+            if(world[row+1][col-1]) neighbors++;
+            if(world[row+1][col])   neighbors++;
+            if(world[row+1][col+1]) neighbors++;
+        }
+        console.log(row+","+col+": "+neighbors)
+        return neighbors;
+    }
+
+    progressWorld() {
+        let output = this.state.world;
+        this.state.world.forEach((row, rowIndex) => {
             row.forEach((col, colIndex) => {
-                
+                let neighbors = this.getNeighbors(this.state.world, rowIndex, colIndex);
+                if(col === true) {
+                    if(neighbors===2 || neighbors === 3) output[rowIndex][colIndex] = true;
+                    else output[rowIndex][colIndex] = false;
+                } else {
+                    if(neighbors===3) output[rowIndex][colIndex] = true;
+                }
             });
         });
+        this.setState({world: output});
     }
 
     onCellClick(event) {
